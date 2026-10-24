@@ -1,0 +1,74 @@
+{
+  "skill_name": "php-migrate",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/php-migrate 5.6 8.5 — run in a git-initialised copy of evals/fixtures/legacy56. When asked: current 5.6, target 8.5, minimum same as target, no extra edits.",
+      "expected_output": "The fixture is migrated to PHP 8.5 with a minimum of 8.5: verify.sh --floor 8.5 --target 8.5 is green, and every planted issue is fixed without changing the tested behaviour.",
+      "files": [
+        "evals/fixtures/legacy56"
+      ],
+      "assertions": [
+        "Asks one AskUserQuestion with current, target, minimum and extra-edit questions before editing any file",
+        "Runs a baseline test on PHP 5.6 and the suite passes there",
+        "composer.json require.php is >=8.5 and phpunit/phpunit is ^13",
+        "OldStyle has a __construct method and declares $upper (no dynamic property)",
+        "No each(), create_function(), $name{0} or \"${name}\" remain in src/",
+        "OldStyle::label takes ?array $options = null",
+        "Bag methods have return types: offsetExists(): bool, offsetGet(): mixed, offsetSet(): void, offsetUnset(): void, count(): int",
+        "Bag::offsetSet handles a null offset without using null as an array key",
+        "Bytes passes only in-range ints to chr() and int operands to %",
+        "LegacyTest extends PHPUnit\\Framework\\TestCase and setUp() returns void",
+        "phpunit.xml.dist validates against PHPUnit 13 and has a <source> element",
+        "verify.sh exits 0 with fail-on-deprecation/warning/notice",
+        "No risky Rector rule was applied and no declare(strict_types=1) was added"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/php-migrate",
+      "expected_output": "With no arguments the skill runs detect.sh, then asks the user for current, target and minimum PHP before changing anything.",
+      "files": [
+        "evals/fixtures/legacy56"
+      ],
+      "assertions": [
+        "detect.sh runs before any other script",
+        "The first question offers 5.6 as the detected current version",
+        "No file in the project changes before the user answers"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "/php-migrate 8.5 8.5 — run on the result of eval 1 (already migrated).",
+      "expected_output": "The skill sees the project already targets 8.5, reports that there is nothing to migrate, and changes no files. rector.sh --floor 8.5 dry run exits 0.",
+      "files": [],
+      "assertions": [
+        "Reports nothing to migrate",
+        "git status shows no new changes",
+        "rector.sh --floor 8.5 exits 0"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "/php-migrate 5.6 8.5 — run on morse-php (this repository, branch php-8.5-migration).",
+      "expected_output": "morse-php runs on PHP 8.5.12 with minimum 8.5: verify.sh green; tests on PHPUnit 13; all PHP 8.x deprecations fixed.",
+      "files": [],
+      "assertions": [
+        "Table ArrayAccess methods have return types (library/Table.php)",
+        "Table::offsetSet handles a null offset ($table[] = ...) without using null as an array key",
+        "Wav declares toneTime, ditTime, charsPc, wordsPc, dahTime, sampleDt, slash",
+        "Wav header bytes use int arithmetic (no float % or out-of-range chr())",
+        "The no-op ord() loop in Wav::generate is reported as a latent issue (single-byte ord() is not deprecated) and left alone",
+        "Zero speed, sample rate and frequency are rejected with an exception",
+        "Text rejects an empty word separator and survives a trailing case modifier",
+        "Text handles preg_split returning false (invalid UTF-8)",
+        "expectExceptionMessage() calls are replaced (deprecated in PHPUnit 13)",
+        "Tests use PHPUnit\\Framework\\TestCase and setUp(): void; phpunit.xml.dist migrated",
+        "composer.json requires php >=8.5 and ext-mbstring; composer.lock regenerated",
+        "CI changes only if the user approved them",
+        "The report lists the Cyrillic regex without /u (Text.php) as a latent bug left alone",
+        "Coverage reports are not configured in phpunit.xml.dist without a coverage driver (PHPUnit 13 would run no tests)"
+      ]
+    }
+  ]
+}
