@@ -170,9 +170,6 @@ class Wav {
         }
 
         $n = strlen($sound);
-        for ($i = 0; $i < $n; $i++) {
-            $x = ord($sound[$i]);
-        }
 
         // Write out the WAVE file
         $x = $n + 32;
