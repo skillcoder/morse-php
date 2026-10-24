@@ -9,7 +9,12 @@ Support case sensitive **setCaseSense(true)** in 2 way:
 setUpperCaseMod(false): lowerCaseModifer `&` (Interval) - added before any chars in lower case  
 setUpperCaseMod(true): upperCaseModifer `+` (End of message) - added before any chars in upper case
 
-[![Build Status](https://travis-ci.org/skillcoder/morse-php.svg?branch=master)](https://travis-ci.org/skillcoder/morse-php)
+[![CI](https://github.com/skillcoder/morse-php/actions/workflows/ci.yml/badge.svg)](https://github.com/skillcoder/morse-php/actions/workflows/ci.yml)
+
+# Requirements
+
+- PHP 8.5 or newer, with the `mbstring` extension
+- Version 1.0.x supports PHP 5.6 – 7.3
 
 # Usage
 
@@ -46,14 +51,14 @@ To include `morse-php` in your project, add it to your `composer.json` file:
 ```json
 {
     "require": {
-        "skillcoder/morse": "^1.0.0"
+        "skillcoder/morse": "^1.1.0"
     },
     "repositories": [
         {
             "type": "package",
             "package": {
                 "name": "skillcoder/morse",
-                "version": "1.0.1",
+                "version": "1.1.0",
                 "source": {
                     "url": "https://github.com/skillcoder/morse-php.git",
                     "type": "git",

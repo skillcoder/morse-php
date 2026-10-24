@@ -114,18 +114,18 @@ class Table implements \ArrayAccess {
      * @param mixed $offset
      * @return boolean
      */
-    public function offsetExists($offset) {
-        return isset($this->table[$offset]);
+    public function offsetExists(mixed $offset): bool {
+        return isset($this->table[$this->key($offset)]);
     }
 
     /**
      * Get the morse code for the given offset (character)
      *
      * @param mixed $offset
-     * @return string
+     * @return string|null null for an unknown character
      */
-    public function offsetGet($offset) {
-        return $this->table[$offset];
+    public function offsetGet(mixed $offset): mixed {
+        return $this->table[$this->key($offset)] ?? null;
     }
 
     /**
@@ -134,7 +134,8 @@ class Table implements \ArrayAccess {
      * @param mixed $offset
      * @param string $value
      */
-    public function offsetSet($offset, $value) {
+    public function offsetSet(mixed $offset, mixed $value): void {
+        $offset = $this->key($offset);
         if ($this->offsetExists($offset)) {
             throw new \Exception('Can\'t override predefined character');
         } else if (!preg_match('#^[01]+$#', $value)) {
@@ -152,12 +153,24 @@ class Table implements \ArrayAccess {
      *
      * @param mixed $offset
      */
-    public function offsetUnset($offset) {
+    public function offsetUnset(mixed $offset): void {
+        $offset = $this->key($offset);
         if (in_array($offset, $this->predefinedCodes, true)) {
             throw new \Exception('Can\'t unset a predefined morse code');
         }
 
         unset($this->table[$offset]);
+    }
+
+    /**
+     * `$table[] = ...` passes a null offset, which PHP stored under '' before null array
+     * offsets were deprecated (PHP 8.5). Keep that behaviour explicitly.
+     *
+     * @param mixed $offset
+     * @return mixed
+     */
+    private function key($offset) {
+        return $offset ?? '';
     }
 
     /**
@@ -167,7 +180,7 @@ class Table implements \ArrayAccess {
      * @return string
      */
     public function getMorse($character) {
-        return strtr($this->offsetGet($character), '01', '.'.$this->dash);
+        return strtr((string) $this->offsetGet($character), '01', '.'.$this->dash);
     }
 
     /**
@@ -178,6 +191,6 @@ class Table implements \ArrayAccess {
      */
     public function getCharacter($morse) {
         $key = strtr($morse, '.'.$this->dash, '01');
-        return isset($this->reversedTable[$key]) ? $this->reversedTable[$key] : false;
+        return $this->reversedTable[$key] ?? false;
     }
 }

@@ -42,7 +42,7 @@ class Text {
      * @param array $table Optional morse code table to use
      */
     public function __construct($table = null) {
-        $this->table = $table ? $table : new Table();
+        $this->table = $table ?: new Table();
     }
 
     public function setCaseSense($is_case_sense) {
@@ -71,6 +71,11 @@ class Text {
      * @return Text
      */
     public function setWordSeparator($separator) {
+        // explode() throws a ValueError for an empty separator since PHP 8.0
+        if ((string) $separator === '') {
+            throw new \Exception('Word separator must not be empty');
+        }
+
         $this->wordSeparator = $separator;
 
         return $this;
@@ -83,12 +88,13 @@ class Text {
      * @return string
      */
     public function toMorse($text) {
+        $text = (string) $text;
         if (!$this->is_case_sense) {
             $text = strtoupper($text);
         }
 
         $words = preg_split('#\s+#', $text);
-        $morse = array_map([$this, 'morseWord'], $words);
+        $morse = array_map($this->morseWord(...), $words);
         return implode($this->wordSeparator, $morse);
     }
 
@@ -99,9 +105,9 @@ class Text {
      * @return string
      */
     public function fromMorse($morse) {
-        $morse = str_replace($this->invalidCharacterReplacement . ' ', '', $morse);
+        $morse = str_replace($this->invalidCharacterReplacement . ' ', '', (string) $morse);
         $words = explode($this->wordSeparator, $morse);
-        $morse = array_map([$this, 'translateMorseWord'], $words);
+        $morse = array_map($this->translateMorseWord(...), $words);
         return implode(' ', $morse);
     }
 
@@ -113,13 +119,14 @@ class Text {
     */
     private function toUppercase($characters) {
         $cnt = count($characters);
-        $result = array();
+        $result = [];
         $i = 0;
         while($i < $cnt) {
             $char = $characters[$i];
             if ($char === $this->upperCaseModificator) {
                 $i++;
-                $result[] = mb_strtoupper($characters[$i]);
+                // A trailing modifier has no character after it
+                $result[] = mb_strtoupper($characters[$i] ?? '');
             } else {
                 $result[] = mb_strtolower($char);
             }
@@ -137,13 +144,14 @@ class Text {
     */
     private function toLowercase($characters) {
         $cnt = count($characters);
-        $result = array();
+        $result = [];
         $i = 0;
         while($i < $cnt) {
             $char = $characters[$i];
             if ($char === $this->lowerCaseModificator) {
                 $i++;
-                $result[] = mb_strtolower($characters[$i]);
+                // A trailing modifier has no character after it
+                $result[] = mb_strtolower($characters[$i] ?? '');
             } else {
                 $result[] = mb_strtoupper($char);
             }
@@ -160,7 +168,7 @@ class Text {
      */
     private function translateMorseWord($morse) {
         $morseChars = explode(' ', $morse);
-        $characters = array_map([$this, 'translateMorseCharacter'], $morseChars);
+        $characters = array_map($this->translateMorseCharacter(...), $morseChars);
         if ($this->is_case_sense) {
             if ($this->upperMod) {
                 $characters = $this->toUppercase($characters);
@@ -190,7 +198,7 @@ class Text {
      */
     private function morseWord($word) {
         $chars = $this->strSplit($word);
-        $morse = array_map([$this, 'morseCharacter'], $chars);
+        $morse = array_map($this->morseCharacter(...), $chars);
         return implode(' ', $morse);
     }
 
@@ -247,11 +255,12 @@ class Text {
      * @return array
      */
     private function strSplit($str, $l = 0) {
+        // preg_split() returns false for invalid UTF-8; array_map() throws a TypeError on false since PHP 8.0
         return preg_split(
             '#(.{' . $l . '})#us',
             $str,
             -1,
             PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE
-        );
+        ) ?: [];
     }
 }

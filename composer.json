@@ -1,6 +1,5 @@
 {
     "name": "skillcoder/morse",
-    "version": "1.0.1",
     "description": "Generate morse code (text and/or wav-audio) (Support caseSense)",
     "type": "library",
     "license": "MIT",
@@ -15,10 +14,11 @@
         }
     ],
     "require": {
-        "php": ">=5.6.0"
+        "php": ">=8.5",
+        "ext-mbstring": "*"
     },
     "require-dev": {
-        "phpunit/phpunit": "^5.7"
+        "phpunit/phpunit": "^13"
     },
     "autoload": {
         "psr-4": {

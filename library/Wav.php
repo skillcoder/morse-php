@@ -22,18 +22,30 @@ class Wav {
     protected $data = null;
     protected $timingCodes;
 
+    // Timing values computed by generate()
+    protected $toneTime;
+    protected $ditTime;
+    protected $dahTime;
+    protected $charsPc;
+    protected $wordsPc;
+    protected $sampleDt;
+    protected $slash = false;
+
     private $phase  = 0;
     private $dPhase = 0;
 
     private $bytes = [];
 
     public function __construct($table = null) {
-        $this->timingCodes = $table ? $table : new Table();
+        $this->timingCodes = $table ?: new Table();
     }
 
     public function setCwSpeed($speed) {
         if (!is_numeric($speed)) {
             throw new \Exception('$Speed must be numeric');
+        }
+        if ($speed <= 0) {
+            throw new \Exception('Speed must be greater than zero');
         }
 
         $this->cwSpeed = $speed;
@@ -44,6 +56,9 @@ class Wav {
         if (!is_numeric($rate)) {
             throw new \Exception('Sample rate must be numeric');
         }
+        if ($rate <= 0) {
+            throw new \Exception('Sample rate must be greater than zero');
+        }
 
         $this->sampleRate = $rate;
         return $this;
@@ -52,6 +67,9 @@ class Wav {
     public function setFrequency($frequency) {
         if (!is_numeric($frequency)) {
             throw new \Exception('Frequency must be numeric');
+        }
+        if ($frequency <= 0) {
+            throw new \Exception('Frequency must be greater than zero');
         }
 
         $this->frequency = $frequency;
@@ -126,7 +144,7 @@ class Wav {
         }
 
         // Convert the text to morse code string
-        $text = strtoupper($text);
+        $text = strtoupper((string) $text);
         $sound = '';
         for ($i = 0; $i < strlen($text); $i++) {
             if ($text[$i] == ' ') {
@@ -162,16 +180,17 @@ class Wav {
 
         for ($i = 0; $i < 4; $i++) {
             $soundSize .= chr($x % 256);
-            $x = floor($x / 256);
+            $x = intdiv($x, 256);
         }
 
         $riffHeader = 'RIFF' . $soundSize . 'WAVE';
-        $x = $this->sampleRate;
+        // The header stores an integer rate; % and intdiv() need an int (fractional floats are deprecated)
+        $x = (int) $this->sampleRate;
         $sampleRateString = '';
 
         for ($i = 0; $i < 4; $i++) {
             $sampleRateString .= chr($x % 256);
-            $x = floor($x / 256);
+            $x = intdiv($x, 256);
         }
 
         $headerString = 'fmt ' . chr(16) . chr(0) . chr(0) . chr(0) . chr(1) . chr(0) . chr(1) . chr(0);
@@ -181,7 +200,7 @@ class Wav {
 
         for ($i = 0; $i < 4; $i++) {
             $sampleString .= chr($x % 256);
-            $x = floor($x / 256);
+            $x = intdiv($x, 256);
         }
 
         $sound = 'data' . $sampleString . $sound;
