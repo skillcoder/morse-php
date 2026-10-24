@@ -104,7 +104,8 @@ class Table implements \ArrayAccess {
      */
     public function __construct($dash_char = '-') {
         $this->dash = $dash_char;
-        $this->predefinedCodes = array_keys($this->table);
+        // Strings, because PHP turns the digit keys '0'-'9' into integers
+        $this->predefinedCodes = array_map('strval', array_keys($this->table));
         $this->reversedTable = array_flip($this->table);
     }
 
@@ -155,7 +156,7 @@ class Table implements \ArrayAccess {
      */
     public function offsetUnset(mixed $offset): void {
         $offset = $this->key($offset);
-        if (in_array($offset, $this->predefinedCodes, true)) {
+        if (in_array((string) $offset, $this->predefinedCodes, true)) {
             throw new \Exception('Can\'t unset a predefined morse code');
         }
 

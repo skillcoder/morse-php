@@ -59,6 +59,21 @@ class TableTest extends \PHPUnit\Framework\TestCase {
         unset($table['A']);
     }
 
+    public function testCantUnsetPredefinedDigits() {
+        // PHP turns the digit keys '0'-'9' into integers, so this must not depend on the key type.
+        foreach (['5', 5] as $digit) {
+            $table = new Table();
+            $error = null;
+            try {
+                unset($table[$digit]);
+            } catch (\Exception $e) {
+                $error = $e->getMessage();
+            }
+            $this->assertSame("Can't unset a predefined morse code", $error, 'unset ' . var_export($digit, true));
+            $this->assertSame('00000', $table['5']);
+        }
+    }
+
     public function testAppendWithoutCharacterStoresUnderEmptyCharacter() {
         // `$table[] = ...` passes a null offset; PHP < 8.5 stored it under ''.
         $table = new Table();
