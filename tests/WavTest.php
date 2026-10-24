@@ -4,8 +4,8 @@ namespace Morse;
 /**
  * @author Espen Hovlandsdal <espen@hovlandsdal.com>
  */
-class WavTest extends \PHPUnit_Framework_TestCase {
-    protected function setUp() {
+class WavTest extends \PHPUnit\Framework\TestCase {
+    protected function setUp(): void {
         if (!extension_loaded('fileinfo')) {
             $this->markTestSkipped('The finfo extension is not available');
         }
@@ -22,7 +22,7 @@ class WavTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testCanSetCwSpeed() {
-        $wav = (new Wav())->setCwSpeed(10);
+        $wav = new Wav()->setCwSpeed(10);
         $output = $wav->generate('Espen');
 
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
@@ -33,12 +33,12 @@ class WavTest extends \PHPUnit_Framework_TestCase {
 
     public function testThrowsIfInvalidCwSpeedSet() {
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Speed must be numeric');
-        (new Wav())->setCwSpeed('foo');
+        $this->expectExceptionMessageIsOrContains('Speed must be numeric');
+        new Wav()->setCwSpeed('foo');
     }
 
     public function testCanSetSampleRate() {
-        $wav = (new Wav())->setSampleRate(8000);
+        $wav = new Wav()->setSampleRate(8000);
         $output = $wav->generate('Espen');
 
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
@@ -49,12 +49,12 @@ class WavTest extends \PHPUnit_Framework_TestCase {
 
     public function testThrowsIfInvalidSampleRateSet() {
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Sample rate must be numeric');
-        (new Wav())->setSampleRate('foo');
+        $this->expectExceptionMessageIsOrContains('Sample rate must be numeric');
+        new Wav()->setSampleRate('foo');
     }
 
     public function testCanSetFrequency() {
-        $wav = (new Wav())->setFrequency(8000);
+        $wav = new Wav()->setFrequency(8000);
         $output = $wav->generate('Espen');
 
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
@@ -65,8 +65,8 @@ class WavTest extends \PHPUnit_Framework_TestCase {
 
     public function testThrowsIfInvalidFrequencySet() {
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Frequency must be numeric');
-        (new Wav())->setFrequency('foo');
+        $this->expectExceptionMessageIsOrContains('Frequency must be numeric');
+        new Wav()->setFrequency('foo');
     }
 
     public function testCanGenerateLongerValidWav() {
@@ -77,6 +77,32 @@ class WavTest extends \PHPUnit_Framework_TestCase {
         $mime = $finfo->buffer($output);
 
         $this->assertSame('audio/x-wav', $mime);
+    }
+
+    public function testThrowsIfCwSpeedIsZero() {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessageIs('Speed must be greater than zero');
+        new Wav()->setCwSpeed(0);
+    }
+
+    public function testThrowsIfSampleRateIsZero() {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessageIs('Sample rate must be greater than zero');
+        new Wav()->setSampleRate(0);
+    }
+
+    public function testThrowsIfFrequencyIsZero() {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessageIs('Frequency must be greater than zero');
+        new Wav()->setFrequency(0);
+    }
+
+    public function testFractionalSampleRateIsWrittenAsInteger() {
+        $output = new Wav()->setSampleRate(8000.5)->generate('E');
+
+        // fmt chunk: sample rate at byte 24, byte rate at byte 28 (8-bit mono)
+        $this->assertSame(pack('V', 8000), substr($output, 24, 4));
+        $this->assertSame(pack('V', 8000), substr($output, 28, 4));
     }
 
     protected function getLoremIpsum() {

@@ -1,23 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit colors="true"
-  bootstrap="vendor/autoload.php">
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         cacheDirectory="build/.phpunit.cache"
+         colors="true"
+         failOnDeprecation="true"
+         failOnNotice="true"
+         failOnWarning="true"
+         displayDetailsOnTestsThatTriggerDeprecations="true"
+         displayDetailsOnTestsThatTriggerNotices="true"
+         displayDetailsOnTestsThatTriggerWarnings="true"
+         displayDetailsOnPhpunitDeprecations="true">
   <testsuites>
     <testsuite name="morse-php test suite">
       <directory>tests</directory>
     </testsuite>
   </testsuites>
 
-  <logging>
-    <log type="coverage-html" target="build/coverage" title="Code coverage for morse-php" charset="UTF-8" yui="true" highlight="true" />
-    <log type="coverage-clover" target="build/logs/clover.xml" />
-    <log type="junit" target="build/logs/junit.xml" logIncompleteSkipped="false" />
-    <log type="testdox-html" target="build/logs/testdox.html" />
-    <log type="testdox-text" target="build/logs/testdox.txt" />
-  </logging>
-
-  <filter>
-    <whitelist addUncoveredFilesFromWhitelist="true">
+  <source>
+    <include>
       <directory suffix=".php">library</directory>
-    </whitelist>
-  </filter>
+    </include>
+  </source>
+
+  <logging>
+    <junit outputFile="build/logs/junit.xml"/>
+    <testdoxHtml outputFile="build/logs/testdox.html"/>
+    <testdoxText outputFile="build/logs/testdox.txt"/>
+  </logging>
 </phpunit>

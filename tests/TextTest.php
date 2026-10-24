@@ -4,23 +4,23 @@ namespace Morse;
 /**
  * @author Espen Hovlandsdal <espen@hovlandsdal.com>
  */
-class TextTest extends \PHPUnit_Framework_TestCase {
+class TextTest extends \PHPUnit\Framework\TestCase {
     public function testCanTranslateToMorse() {
         $this->assertSame(
             '. ... .--. . -.  .... --- ...- .-.. .- -. -.. ... -.. .- .-..',
-            (new Text())->toMorse('Espen Hovlandsdal')
+            new Text()->toMorse('Espen Hovlandsdal')
         );
     }
 
     public function testInsertsInvalidCharacterReplacement() {
         $this->assertSame(
             '...- .- ..-. ..-. .-.. . .-.  . .-.  --. # -.. -',
-            (new Text())->toMorse('Vaffler er gødt')
+            new Text()->toMorse('Vaffler er gødt')
         );
     }
 
     public function testCanUseAlternativeCharacterReplacement() {
-        $text = (new Text())->setInvalidCharacterReplacement('¤');
+        $text = new Text()->setInvalidCharacterReplacement('¤');
         $this->assertSame(
             '...- .- ..-. ..-. .-.. . .-.  . .-.  --. ¤ -.. -',
             $text->toMorse('Vaffler er gødt')
@@ -28,7 +28,7 @@ class TextTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testCanUseAlternativeWordSeparator() {
-        $text = (new Text())->setWordSeparator('¤');
+        $text = new Text()->setWordSeparator('¤');
         $this->assertSame(
             '...- .- ..-. ..-. .-.. . .-.¤. .-.¤--. --- -.. -',
             $text->toMorse('Vaffler er godt')
@@ -38,19 +38,19 @@ class TextTest extends \PHPUnit_Framework_TestCase {
     public function testCanTranslateFromMorse() {
         $this->assertSame(
             'ESPEN HOVLANDSDAL',
-            (new Text())->fromMorse('. ... .--. . -.  .... --- ...- .-.. .- -. -.. ... -.. .- .-..')
+            new Text()->fromMorse('. ... .--. . -.  .... --- ...- .-.. .- -. -.. ... -.. .- .-..')
         );
     }
 
     public function testHandlesInvalidCharacterReplacement() {
         $this->assertSame(
             'VAFFLER ER GDT',
-            (new Text())->fromMorse('...- .- ..-. ..-. .-.. . .-.  . .-.  --. # -.. -')
+            new Text()->fromMorse('...- .- ..-. ..-. .-.. . .-.  . .-.  --. # -.. -')
         );
     }
 
     public function testCanTranslateAlternativeCharacterReplacement() {
-        $text = (new Text())->setInvalidCharacterReplacement('¤');
+        $text = new Text()->setInvalidCharacterReplacement('¤');
         $this->assertSame(
             'VAFFLER ER GDT',
             $text->fromMorse('...- .- ..-. ..-. .-.. . .-.  . .-.  --. ¤ -.. -')
@@ -58,7 +58,7 @@ class TextTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testCanTranslateAlternativeWordSeparator() {
-        $text = (new Text())->setWordSeparator('¤');
+        $text = new Text()->setWordSeparator('¤');
         $this->assertSame(
             'VAFFLER ER GODT',
             $text->fromMorse('...- .- ..-. ..-. .-.. . .-.¤. .-.¤--. --- -.. -')
@@ -66,11 +66,39 @@ class TextTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testHandlesInvalidAtEndOfString() {
-        $text = (new Text())->setInvalidCharacterReplacement('¤');
+        $text = new Text()->setInvalidCharacterReplacement('¤');
         $this->assertSame(
             'AVSLAG',
             $text->fromMorse($text->toMorse('AVSLAG%'))
         );
+    }
+
+    public function testThrowsIfWordSeparatorIsEmpty() {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessageIs('Word separator must not be empty');
+        new Text()->setWordSeparator('');
+    }
+
+    public function testIgnoresTrailingCaseModifier() {
+        $text = new Text();
+        $text->setCaseSense(true);
+        $this->assertSame('a', $text->fromMorse('.- .-.-.'));
+    }
+
+    public function testInvalidUtf8TranslatesToNothing() {
+        $this->assertSame('', new Text()->toMorse("\xff"));
+    }
+
+    public function testCaseSenseHandlesCyrillicLetters() {
+        $table = new Table();
+        $table['Я'] = '1111111';
+        $text = new Text($table);
+        $text->setCaseSense(true);
+
+        $this->assertSame('-------', $text->toMorse('я'));
+        $this->assertSame('.-.-. -------', $text->toMorse('Я'));
+        $this->assertSame('я', $text->fromMorse('-------'));
+        $this->assertSame('Я', $text->fromMorse('.-.-. -------'));
     }
 
     public function testCanPassCustomTable() {
