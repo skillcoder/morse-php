@@ -89,6 +89,18 @@ class TextTest extends \PHPUnit\Framework\TestCase {
         $this->assertSame('', new Text()->toMorse("\xff"));
     }
 
+    public function testCaseSenseHandlesCyrillicLetters() {
+        $table = new Table();
+        $table['Я'] = '1111111';
+        $text = new Text($table);
+        $text->setCaseSense(true);
+
+        $this->assertSame('-------', $text->toMorse('я'));
+        $this->assertSame('.-.-. -------', $text->toMorse('Я'));
+        $this->assertSame('я', $text->fromMorse('-------'));
+        $this->assertSame('Я', $text->fromMorse('.-.-. -------'));
+    }
+
     public function testCanPassCustomTable() {
         $table = new Table();
         $table['%'] = '001100110011';

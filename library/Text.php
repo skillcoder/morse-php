@@ -225,11 +225,12 @@ class Text {
         if ($this->is_case_sense) {
             $is_lower = false;
             $is_letter = false;
-            if (preg_match('/^[a-zа-яё]$/', $char)) {
-                $char = strtoupper($char);
+            // /u and mb_strtoupper(): Cyrillic letters are multibyte in UTF-8
+            if (preg_match('/^[a-zа-яё]$/u', $char)) {
+                $char = mb_strtoupper($char);
                 $is_lower = true;
                 $is_letter = true;
-            } else if (preg_match('/^[A-ZА-ЯЁ]$/', $char)) {
+            } else if (preg_match('/^[A-ZА-ЯЁ]$/u', $char)) {
                 $is_letter = true;
             }
 
